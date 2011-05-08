@@ -1,4 +1,4 @@
-# Map Location Field
+# Address GeoLocation Field
 
 * Version: 1.0
 * Author: John Porter

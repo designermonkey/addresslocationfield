@@ -5,7 +5,7 @@
 		public function about(){
 			return array(
 				'name' => 'Field: Address GeoLocation',
-				'version' => '1-alpha',
+				'version' => '1 beta',
 				'release-date' => '2010-01-04',
 				'author' => array(
 					'name' => 'John Porter',
