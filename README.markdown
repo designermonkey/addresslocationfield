@@ -1,4 +1,4 @@
-# Address GeoLocation Field
+# Address Location Field
 
 * Version: 1.0
 * Author: John Porter
@@ -75,7 +75,6 @@ The first two attributes are the latitude/longitude of the marker on the map. Th
 If you are filtering using the Address GeoLocation Field using a "within" filter then you will see an additional `<distance>` element:
 
 	<location latitude="51.6614" longitude="-0.40042">
-		<map zoom="15" centre="51.6614,-0.40042" />
 		<distance from="51.6245572,-0.4674079" distance="3.8" unit="miles" />
 	</location>
 

@@ -8,14 +8,14 @@
 	
 (function($){
 	
-	function AddressGeoLocationField(){
-		map =  new google.maps.Map($('div.field-addressgeolocation div.map')[0], {
+	function addresslocationField(){
+		map =  new google.maps.Map($('div.field-addresslocation div.map')[0], {
 			center: new google.maps.LatLng(0,0),
 			zoom: 1,
 			MapTypeId: google.maps.MapTypeId.ROADMAP
 		});
 		
-		field = $('div.field-addressgeolocation');
+		field = $('div.field-addresslocation');
 		lat = field.find('label.latitude input');
 		lng = field.find('label.longitude input');
 		
@@ -110,7 +110,7 @@
 	}
 	
 	function SetLatLng(latlng){
-		field = $('div.field-addressgeolocation');
+		field = $('div.field-addresslocation');
 		lat = field.find('label.latitude input');
 		lng = field.find('label.longitude input');
 		lat.val(latlng.lat().toFixed(7));
@@ -143,6 +143,6 @@
 	}
 	
 	$(document).ready(function(){
-		AddressGeoLocationField();
+		addresslocationField();
 	});
 })(jQuery);

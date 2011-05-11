@@ -17,7 +17,7 @@
 		{
 			parent::__construct($parent);
 			$this->_name = 'Address GeoLocation';
-			$this->_driver = $this->_engine->ExtensionManager->create('addressgeolocationfield');
+			$this->_driver = $this->_engine->ExtensionManager->create('addresslocationfield');
 		}
 		
 		private function __geocodeAddress($address, $return_default=true)
@@ -145,8 +145,8 @@
 		{
 			if ($this->_engine->Page) {
 				$this->_engine->Page->addScriptToHead('http://maps.google.com/maps/api/js?sensor=false', 79);
-				$this->_engine->Page->addStylesheetToHead(URL . '/extensions/addressgeolocationfield/assets/addressgeolocationfield.publish.css', 'screen', 78);
-				$this->_engine->Page->addScriptToHead(URL . '/extensions/addressgeolocationfield/assets/addressgeolocationfield.publish.js', 80);
+				$this->_engine->Page->addStylesheetToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.css', 'screen', 78);
+				$this->_engine->Page->addScriptToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.js', 80);
 			}
 
 			// input values, from data or defaults

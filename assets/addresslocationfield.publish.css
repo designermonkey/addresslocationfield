@@ -1,0 +1,84 @@
+div.field-addresslocation {
+	clear: both;
+	padding-bottom: 1em;
+	border-bottom: 1px solid #ddc;
+}
+div.field-addresslocation:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+div.field-addresslocation p {
+	border-bottom: 1px solid #ddc;
+	padding-bottom: 0.3em;
+	margin-bottom: 1em;
+	margin-top: 1.5em;
+}
+div.field-addresslocation label {
+	float: left;
+	clear: left;
+	margin-bottom: 0em;
+}
+div.field-addresslocation label.street,
+div.field-addresslocation label.city {
+	margin-top: 0.5em;
+}
+div.field-addresslocation label.street,
+div.field-addresslocation label.region,
+div.field-addresslocation label.latitude,
+div.field-addresslocation label.country {
+	width: 46%;
+}
+div.field-addresslocation label.country {
+	clear: both;
+}
+div.field-addresslocation label.city,
+div.field-addresslocation label.postal-code,
+div.field-addresslocation label.longitude {
+	width: 46%;
+	float: right;
+	clear: right;
+}
+div.field-addresslocation label.latitude input,
+div.field-addresslocation label.longitude input {
+	color: #7F7F7F;
+}
+div.field-addresslocation label input {
+	clear: both;
+}
+div.field-addresslocation label.locate {
+	width: 100%;
+}
+div.field-addresslocation label.locate a.mapswitch {
+	float: right;
+	text-decoration: none;
+}
+div.field-addresslocation label.locate input {
+	float: left;
+	width: 25%;
+	clear: none;
+	margin-right: 3%;
+}
+
+div.field-addresslocation div.main {
+	width: 50%;
+	float: left;
+}
+div.field-addresslocation div.main.map {
+	float: right;
+	height: 280px;
+	width: 48%;
+}
+
+div.field-addresslocation div.sidebar {
+	width: 100%;
+	float:left;
+}
+div.field-addresslocation div.sidebar.map {
+	width: 100%;
+	margin-top: 15px;
+	height: 200px;
+	float: left;
+}

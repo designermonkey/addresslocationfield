@@ -1,10 +1,10 @@
 <?php
 
-	Class extension_addressgeolocationfield extends Extension{
+	Class extension_addresslocationfield extends Extension{
 
 		public function about(){
 			return array(
-				'name' => 'Field: Address GeoLocation',
+				'name' => 'Field: Address Location',
 				'version' => '1 beta',
 				'release-date' => '2010-01-04',
 				'author' => array(
