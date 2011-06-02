@@ -2,10 +2,11 @@
 
 	Class extension_addresslocationfield extends Extension{
 
-		public function about(){
+		public function about()
+		{
 			return array(
 				'name' => 'Field: Address Location',
-				'version' => '1 beta',
+				'version' => '1.01 beta',
 				'release-date' => '2010-01-04',
 				'author' => array(
 					'name' => 'John Porter',
@@ -17,12 +18,12 @@
 
 		public function uninstall()
 		{
-			Symphony::Database()->query("DROP TABLE `tbl_fields_addressgeolocation`");
+			Symphony::Database()->query("DROP TABLE `tbl_fields_addresslocation`");
 		}
 
 		public function install()
 		{
-			return Symphony::Database()->query("CREATE TABLE `tbl_fields_addressgeolocation` (
+			return Symphony::Database()->query("CREATE TABLE `tbl_fields_addresslocation` (
 				`id` int(11) unsigned NOT NULL auto_increment,
 				`field_id` int(11) unsigned NOT NULL,
 				`street_label` varchar(80) NOT NULL,

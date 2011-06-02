@@ -2,7 +2,7 @@
 
 	require_once(CORE . '/class.cacheable.php');
 
-	Class fieldAddressGeoLocation extends Field{
+	Class fieldAddressLocation extends Field{
 
 		private $_driver;
 		private $_geocode_cache_expire = 60; // minutes
@@ -16,15 +16,15 @@
 		public function __construct(&$parent)
 		{
 			parent::__construct($parent);
-			$this->_name = 'Address GeoLocation';
+			$this->_name = 'Address Location';
 			$this->_driver = $this->_engine->ExtensionManager->create('addresslocationfield');
 		}
 		
-		private function __geocodeAddress($address, $return_default=true)
+		private function __geocodeAddress($address)
 		{
 			$coordinates = null;
 
-			$cache_id = md5('maplocationfield_' . $address);
+			$cache_id = md5('addresslocationfield_' . $address);
 			$cache = new Cacheable($this->_engine->Database);
 			$cachedData = $cache->check($cache_id);
 
@@ -56,10 +56,6 @@
 			// return comma delimeted string
 			elseif ($coordinates) {
 				return "$coordinates";
-			}
-			// return default coordinates
-			elseif ($return_default) {
-				return "{$this->_default_coordinates}";
 			}
 		}
 
@@ -284,7 +280,7 @@
 			if($data['country']) $string .= ', '.$data['country'];
 			$string .= ' ('.$data['latitude'] . ', ' . $data['longitude'].')';
 			
-			return $string;
+			return trim($string,", ");
 		}
 
 		function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false)
