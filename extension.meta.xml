@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="addresslocationfield">
+	<name>Address Location Field</name>
+	<description>Geocode an address, then refine the latlng returned for precision.</description>
+	<repo type="github">https://github.com/designermonkey/addresslocationfield</repo>
+	<url type="discuss">http://symphony-cms.com/discuss/thread/70238/</url>
+	<types>
+		<type>Field Types</type>
+	</types>
+	<authors>
+		<author>
+			<name github="designermonkey" symphony="designermonkey">John Porter</name>
+			<website>http://designermonkey.co.uk</website>
+		</author>
+	</authors>
+	<releases>
+		<release version="1" date="2011-05-31" min="2.2" />
+	</releases>
+</extension>
