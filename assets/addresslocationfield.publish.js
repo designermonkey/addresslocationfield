@@ -5,9 +5,8 @@
 	var lat = null;
 	var lng = null;
 	var geocoder = 	new google.maps.Geocoder();
-	
+
 (function($){
-	
 	function addresslocationField(){
 		map =  new google.maps.Map($('div.field-addresslocation div.map')[0], {
 			center: new google.maps.LatLng(0,0),
@@ -65,8 +64,11 @@
 			});
 		}
 		
+
 		field.find('label.locate input[name="locate"]').click(function(ev){
 			
+			//Reassign field to stop mime warning/error
+			var field = $('div.field-addresslocation');
 			var button = $(this);
 			
 			var button_value = button.val();
