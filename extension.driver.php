@@ -2,20 +2,6 @@
 
 	Class extension_addresslocationfield extends Extension{
 
-		public function about()
-		{
-			return array(
-				'name' => 'Field: Address Location',
-				'version' => '1.01 beta',
-				'release-date' => '2010-01-04',
-				'author' => array(
-					'name' => 'John Porter',
-					'website' => 'http://designermonkey.co.uk',
-					'email' => 'contact@designermonkey.co.uk'
-				)
-			);
-		}
-
 		public function uninstall()
 		{
 			Symphony::Database()->query("DROP TABLE `tbl_fields_addresslocation`");

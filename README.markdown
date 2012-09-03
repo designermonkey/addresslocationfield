@@ -1,6 +1,6 @@
 # Address Location Field
 
-* Version: 1.0
+* Version: 1.1
 * Author: John Porter
 * Build Date: 2011-05-08
 * Requirements: Symphony 2.2

@@ -13,11 +13,11 @@
 
 		private $_filter_origin = array();
 
-		public function __construct(&$parent)
+		public function __construct()
 		{
-			parent::__construct($parent);
+			parent::__construct();
 			$this->_name = 'Address Location';
-			$this->_driver = $this->_engine->ExtensionManager->create('addresslocationfield');
+			$this->_driver = Symphony::ExtensionManager()->create('addresslocationfield');
 		}
 		
 		private function __geocodeAddress($address)
@@ -25,7 +25,7 @@
 			$coordinates = null;
 
 			$cache_id = md5('addresslocationfield_' . $address);
-			$cache = new Cacheable($this->_engine->Database);
+			$cache = new Cacheable(Symphony::Database());
 			$cachedData = $cache->check($cache_id);
 
 			// no data has been cached
@@ -82,7 +82,7 @@
 
 		}
 
-		public function processRawFieldData($data, &$status, $simulate=false, $entry_id=NULL)
+		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null)
 		{
 			$status = self::__OK__;
 			
@@ -139,10 +139,10 @@
 
 		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL)
 		{
-			if ($this->_engine->Page) {
-				$this->_engine->Page->addScriptToHead('http://maps.google.com/maps/api/js?sensor=false', 79);
-				$this->_engine->Page->addStylesheetToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.css', 'screen', 78);
-				$this->_engine->Page->addScriptToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.js', 80);
+			if (Administration::instance()->Page) {
+				Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.css', 'screen', 78);
+				Administration::instance()->Page->addScriptToHead('http://maps.google.com/maps/api/js?sensor=false', 79);
+				Administration::instance()->Page->addScriptToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.js', 80);
 			}
 
 			// input values, from data or defaults
@@ -283,7 +283,7 @@
 			return trim($string,", ");
 		}
 
-		function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation=false)
+		function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false)
 		{
 
 			$columns_to_labels = array();
