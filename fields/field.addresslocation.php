@@ -206,7 +206,7 @@
 
 		public function createTable()
 		{
-			return $this->Database->query(
+			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
 				  `id` int(11) unsigned NOT NULL auto_increment,
 				  `entry_id` int(11) unsigned NOT NULL,
@@ -236,7 +236,7 @@
 				  INDEX `postal_code_handle` (`postal_code_handle`),
 				  INDEX `country` (`country`),
 				  INDEX `country_handle` (`country_handle`)
-				) TYPE=MyISAM;"
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
 			);
 		}
 

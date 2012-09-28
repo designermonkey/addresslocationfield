@@ -1,9 +1,9 @@
 # Address Location Field
 
-* Version: 1.1
+* Version: 1.1.1
 * Author: John Porter
-* Build Date: 2011-05-08
-* Requirements: Symphony 2.2
+* Build Date: 2012-09-28
+* Requirements: Symphony 2.3
 
 ## Installation
 
