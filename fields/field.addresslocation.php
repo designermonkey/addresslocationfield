@@ -19,7 +19,7 @@
 			$this->_name = 'Address Location';
 			$this->_driver = Symphony::ExtensionManager()->create('addresslocationfield');
 		}
-		
+
 		private function __geocodeAddress($address)
 		{
 			$coordinates = null;
@@ -75,7 +75,7 @@
 
 			$this->appendGroup($wrapper, array('street' => 'Street', 'city' => 'City'));
 			$this->appendGroup($wrapper, array('region' => 'Region', 'postal_code' => 'Postal Code'));
-			
+
 			$group = $this->appendGroup($wrapper, array('country' => 'Country'));
 
 			$this->appendShowColumnCheckbox($group);
@@ -85,7 +85,7 @@
 		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null)
 		{
 			$status = self::__OK__;
-			
+
 			if(!is_array($data) || empty($data)) return null;
 
 			$result = array(
@@ -104,7 +104,7 @@
 				$result['latitude'] = $data['latitude'];
 				$result['longitude'] = $data['longitude'];
 			}
-			
+
 			$result = array_merge($result, array(
 				'entry_id' => $entry_id,
 				'street_handle' => Lang::createHandle($data['street']),
@@ -148,16 +148,16 @@
 			// input values, from data or defaults
 			$coordinates = ($data['latitude'] && $data['longitude']) ? array($data['latitude'], $data['longitude']) : explode(',',$this->get('default_location_coords'));
 			$class = $this->get('location');
-			
+
 			$label = new XMLElement('p', $this->get('label'));
 			$label->setAttribute('class', 'title');
 			$wrapper->appendChild($label);
-			
+
 			// Address Fields
 			$address = new XMLElement('div');
 			$address->setAttribute('class', 'address '.$class);
 			$wrapper->appendChild($address);
-			
+
 			$label = Widget::Label($this->get('street_label'));
 			$label->setAttribute('class', 'street');
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][street]'.$fieldnamePostfix, $data['street']));
@@ -182,7 +182,7 @@
 			$label->setAttribute('class', 'country');
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][country]'.$fieldnamePostfix, $data['country']));
 			$address->appendChild($label);
-	
+
 			$label = Widget::Label('Latitude');
 			$label->setAttribute('class', 'latitude');
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][latitude]'.$fieldnamePostfix, $coordinates[0], 'text', array('readonly' => 'readonly')));
@@ -195,10 +195,10 @@
 
 			$label = Widget::Label();
 			$label->setAttribute('class', 'locate');
-			$label->appendChild(Widget::Input('locate', 'Locate on map', 'button'));
-			$label->appendChild(Widget::Input('clear', 'Clear Address', 'button'));
+			$label->appendChild(Widget::Input('locate', 'Geocode Address', 'button', array('class' => 'button')));
+			$label->appendChild(Widget::Input('clear', 'Clear Address', 'button', array('class' => 'button')));
 			$address->appendChild($label);
-			
+
 			$map = new XMLElement('div');
 			$map->setAttribute('class', 'map '.$class.' open');
 			$wrapper->appendChild($map);
@@ -247,7 +247,7 @@
 				'longitude' => $data['longitude']
 			));
 			$wrapper->appendChild($field);
-			
+
 			foreach (array('street', 'city', 'region', 'postal_code', 'country') as $name)
 			{
 				if ($encode === TRUE){
@@ -271,7 +271,7 @@
 		public function prepareTableValue($data, XMLElement $link = null)
 		{
 			if (empty($data)) return;
-			
+
 			$string = '';
 			if($data['street']) $string .= $data['street'];
 			if($data['city']) $string .= ', '.$data['city'];
@@ -279,7 +279,7 @@
 			if($data['postal_code']) $string .= ', '.$data['postal_code'];
 			if($data['country']) $string .= ', '.$data['country'];
 			$string .= ' ('.$data['latitude'] . ', ' . $data['longitude'].')';
-			
+
 			return trim($string,", ");
 		}
 
@@ -288,15 +288,15 @@
 
 			$columns_to_labels = array();
 			$where_array = array();
-			
+
 			foreach (array('street', 'city', 'region', 'postal_code', 'country') as $name)
 			{
 				$columns_to_labels[Lang::createHandle($this->get("{$name}_label"))] = $name;
 			}
-			
+
 			$columns = implode('|', array_keys($columns_to_labels));
 			$this->_key++;
-			
+
 			// Symphony by default splits filters by commas. We want commas, so
 			// concatenate filters back together again putting commas back in
 			$data = join(',', $data);
@@ -304,7 +304,7 @@
 			if(preg_match("/^in ($columns) of (.+)$/", $data, $filters)){
 				$column = $columns_to_labels[$filters[1]];
 				$value = $filters[2];
-				
+
 				$where .= " AND (
 					t{$this->get('id')}_{$this->_key}.{$column} = '{$value}'
 					OR t{$this->get('id')}_{$this->_key}.{$column}_handle = '{$value}'
@@ -362,25 +362,25 @@
 			return true;
 
 		}
-		
-		
+
+
 		// Helper functions
 		private function appendGroup(&$wrapper, $fields = array())
 		{
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
 			$wrapper->appendChild($group);
-			
+
 			foreach ($fields as $name => $text)
 			{
 				$label = Widget::Label(__("Label for $text Field"));
 				$group->appendChild($label);
-				
+
 				$value = ($this->get("{$name}_label") ? $this->get("{$name}_label") : $text);
 				$input = Widget::Input("fields[{$this->get('sortorder')}][{$name}_label]", $value);
 				$label->appendChild($input);
 			}
-			
+
 			return $group;
 		}
 	}
