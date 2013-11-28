@@ -89,11 +89,11 @@
 			if(!is_array($data) || empty($data)) return null;
 
 			$result = array(
-				'street' => $data['street'],
-				'city' => $data['city'],
-				'region' => $data['region'],
-				'postal_code' => $data['postal_code'],
-				'country' => $data['country'],
+				'street' => General::sanitize($data['street']),
+				'city' => General::sanitize($data['city']),
+				'region' => General::sanitize($data['region']),
+				'postal_code' => General::sanitize($data['postal_code']),
+				'country' => General::sanitize($data['country']),
 			);
 			if($data['latitude'] == '' || $data['longitude'] == ''){
 				$coordinates = explode(',',$this->__geocodeAddress(implode(',', $result)));

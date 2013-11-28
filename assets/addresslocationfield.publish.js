@@ -1,12 +1,27 @@
-	
+(function($){
 	var field = null;
 	var map = null;
 	var marker = {};
 	var lat = null;
 	var lng = null;
 	var geocoder = 	new google.maps.Geocoder();
+	var helpers = {
+        /**
+         * Disable or enable a form element (mainly buttons)
+         * @param {DOMElement} $el The element to disable/enable
+         * @param {boolean} disable If set to true, then the $el will become disabled, false (or not passed in) enables it
+         */
+		toggleFieldState: function ($el, disable) {
+			if ($el && $el.length) {
+				if (disable) {
+					$el.attr('disabled', 'disabled');
+				} else {
+					$el.removeAttr('disabled');
+				}
+			}
+		}
+	};
 
-(function($){
 	function addresslocationField(){
 		map =  new google.maps.Map($('div.field-addresslocation div.map')[0], {
 			center: new google.maps.LatLng(0,0),
@@ -23,10 +38,10 @@
 			map.setCenter(latlng);
 			map.setZoom(16);
 			SetMarker(latlng);
-			field.find('label.locate input[name="locate"]').attr('disabled', 'disabled');
+			helpers.toggleFieldState(field.find('label.locate input[name="locate"]'), true);
 		}
 		else{
-			field.find('label.locate input[name="clear"]').attr('disabled', 'disabled');
+			helpers.toggleFieldState(field.find('label.locate input[name="clear"]'), true);
 		}
 		
 		field.find('label.locate input[name="clear"]').click(function(ev){
@@ -98,8 +113,15 @@
 				button.parent('label').append('<i>Address not found</i>')
 			});
 		});
+
+		field.on('focus', 'input[type=text]', function(ev){
+			var $btn = field.find('label.locate input[name="locate"]')
+			if ($btn.attr('disabled')) {
+				helpers.toggleFieldState($btn);
+			}
+
+		});
 	}
-	
 	function GeocodeAddress(address, success, fail){
 		geocoder.geocode({"address":address}, function(results, status){
 			console.log(status, results);
