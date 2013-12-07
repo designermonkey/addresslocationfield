@@ -38,6 +38,11 @@
 				$ch->setopt('URL', 'http://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($address).'&sensor=false');
 				$response = json_decode($ch->exec());
 
+				if (isset($response->error_message)) {
+					$err = 'Google Maps Error: "' . $response->status . ' - ' . $response->error_message . '" for ' . $address . ' Geo coordinates could not be generated.';
+					Symphony::Log()->pushToLog($err, E_ERROR, true);
+				}
+
 				$coordinates = $response->results[0]->geometry->location;
 
 				if ($coordinates && is_object($coordinates)) {
