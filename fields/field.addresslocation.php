@@ -307,13 +307,17 @@
 			$data = join(',', $data);
 
 			if(preg_match("/^in ($columns) of (.+)$/", $data, $filters)){
+				$field_id = $this->get('id');
+
 				$column = $columns_to_labels[$filters[1]];
 				$value = $filters[2];
 				
 				$where .= " AND (
-					t{$this->get('id')}_{$this->_key}.{$column} = '{$value}'
-					OR t{$this->get('id')}_{$this->_key}.{$column}_handle = '{$value}'
+					t{$field_id}_{$this->_key}.{$column} = '{$value}'
+					OR t{$field_id}_{$this->_key}.{$column}_handle = '{$value}'
 				)";
+
+				$joins .= " LEFT JOIN `tbl_entries_data_{$field_id}` AS `t{$field_id}_{$this->_key}` ON (`e`.`id` = `t{$field_id}_{$this->_key}`.entry_id) ";
 			}
 			/*
 			within 20 km of 10.545, -103.1
