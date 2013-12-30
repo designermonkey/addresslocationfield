@@ -38,6 +38,11 @@
 				$ch->setopt('URL', 'http://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($address).'&sensor=false');
 				$response = json_decode($ch->exec());
 
+				if (isset($response->error_message)) {
+					$err = 'Google Maps Error: "' . $response->status . ' - ' . $response->error_message . '" for ' . $address . ' Geo coordinates could not be generated.';
+					Symphony::Log()->pushToLog($err, E_ERROR, true);
+				}
+
 				$coordinates = $response->results[0]->geometry->location;
 
 				if ($coordinates && is_object($coordinates)) {
@@ -89,11 +94,11 @@
 			if(!is_array($data) || empty($data)) return null;
 
 			$result = array(
-				'street' => $data['street'],
-				'city' => $data['city'],
-				'region' => $data['region'],
-				'postal_code' => $data['postal_code'],
-				'country' => $data['country'],
+				'street' => General::sanitize($data['street']),
+				'city' => General::sanitize($data['city']),
+				'region' => General::sanitize($data['region']),
+				'postal_code' => General::sanitize($data['postal_code']),
+				'country' => General::sanitize($data['country']),
 			);
 			if($data['latitude'] == '' || $data['longitude'] == ''){
 				$coordinates = explode(',',$this->__geocodeAddress(implode(',', $result)));
@@ -302,13 +307,17 @@
 			$data = join(',', $data);
 
 			if(preg_match("/^in ($columns) of (.+)$/", $data, $filters)){
+				$field_id = $this->get('id');
+
 				$column = $columns_to_labels[$filters[1]];
 				$value = $filters[2];
 
 				$where .= " AND (
-					t{$this->get('id')}_{$this->_key}.{$column} = '{$value}'
-					OR t{$this->get('id')}_{$this->_key}.{$column}_handle = '{$value}'
+					t{$field_id}_{$this->_key}.{$column} = '{$value}'
+					OR t{$field_id}_{$this->_key}.{$column}_handle = '{$value}'
 				)";
+
+				$joins .= " LEFT JOIN `tbl_entries_data_{$field_id}` AS `t{$field_id}_{$this->_key}` ON (`e`.`id` = `t{$field_id}_{$this->_key}`.entry_id) ";
 			}
 			/*
 			within 20 km of 10.545, -103.1
