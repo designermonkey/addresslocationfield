@@ -7,6 +7,38 @@
 			Symphony::Database()->query("DROP TABLE `tbl_fields_addresslocation`");
 		}
 
+		public function update($previousVersion){
+			$addresslocation_entry_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_addresslocation`");
+
+			if(version_compare($previousVersion, '1.2.2', '<')){
+				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
+				{
+					foreach($addresslocation_entry_tables as $field)
+					{
+						Symphony::Database()->query(sprintf(
+							"ALTER TABLE `tbl_entries_data_%d` ADD `neighborhood` varchar(255), ADD `neighborhood_handle` varchar(255)",
+							$field
+						));
+					}
+				}
+			}
+
+			if(version_compare($previousVersion, '1.2.1', '<')){
+				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
+				{
+					foreach($addresslocation_entry_tables as $field)
+					{
+						Symphony::Database()->query(sprintf(
+							"ALTER TABLE `tbl_entries_data_%d` ADD `result_data` blob NOT NULL",
+							$field
+						));
+					}
+				}
+			}
+
+			return true;
+		}
+
 		public function install()
 		{
 			return Symphony::Database()->query("CREATE TABLE `tbl_fields_addresslocation` (

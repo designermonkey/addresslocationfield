@@ -43,25 +43,28 @@
 					Symphony::Log()->pushToLog($err, E_ERROR, true);
 				}
 
-				$coordinates = $response->results[0]->geometry->location;
+				$result = $response->results[0];
+				//$coordinates = $result->geometry->location;
+				//$address_components = $result->address_components;
 
 				if ($coordinates && is_object($coordinates)) {
-					$cache->write($cache_id, $coordinates->lat . ', ' . $coordinates->lng, $this->_geocode_cache_expire); // cache lifetime in minutes
+					$cache->write($cache_id, json_encode($result), $this->_geocode_cache_expire); // cache lifetime in minutes
 				}
 
 			}
 			// fill data from the cache
 			else {
-				$coordinates = $cachedData['data'];
+				$result = json_decode($cachedData['data']);
 			}
-			// coordinates is an array, split and return
+			/*// coordinates is an array, split and return
 			if ($coordinates && is_object($coordinates)) {
 				return $coordinates->lat . ', ' . $coordinates->lng;
 			}
 			// return comma delimeted string
 			elseif ($coordinates) {
 				return "$coordinates";
-			}
+			}*/
+			return $result;
 		}
 
 		public function mustBeUnique()
@@ -100,10 +103,19 @@
 				'postal_code' => General::sanitize($data['postal_code']),
 				'country' => General::sanitize($data['country']),
 			);
+			$geocoded_result = $this->__geocodeAddress(implode(',', $result));
+
+			$neighborhood = '';
+			foreach( $geocoded_result->address_components as $key=>$val) {
+				if( $val->types[0] == 'neighborhood') {
+					$neighborhood = $val->long_name;
+				}
+			}
+
 			if($data['latitude'] == '' || $data['longitude'] == ''){
-				$coordinates = explode(',',$this->__geocodeAddress(implode(',', $result)));
-				$result['latitude'] = trim($coordinates[0]);
-				$result['longitude'] = trim($coordinates[1]);
+				$coordinates = $geocoded_result->geometry->location;
+				$result['latitude'] = $coordinates->lat;
+				$result['longitude'] = $coordinates->lng;
 			}
 			elseif($data['latitude'] != '' && $data['longitude'] != ''){
 				$result['latitude'] = $data['latitude'];
@@ -117,6 +129,9 @@
 				'region_handle' => Lang::createHandle($data['region']),
 				'postal_code_handle' => Lang::createHandle($data['postal_code']),
 				'country_handle' => Lang::createHandle($data['country']),
+				'neighborhood' => $neighborhood,
+				'neighborhood_handle' => Lang::createHandle($neighborhood),
+				'result_data' => json_encode($geocoded_result),
 			));
 			return $result;
 		}
@@ -227,6 +242,9 @@
 				  `country_handle` varchar(255),
 				  `latitude` double default NULL,
 				  `longitude` double default NULL,
+				  `neighborhood` varchar(255),
+				  `neighborhood_handle` varchar(255),
+				  `result_data` blob NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  KEY `latitude` (`latitude`),
@@ -240,9 +258,61 @@
 				  INDEX `postal_code` (`postal_code`),
 				  INDEX `postal_code_handle` (`postal_code_handle`),
 				  INDEX `country` (`country`),
-				  INDEX `country_handle` (`country_handle`)
+				  INDEX `country_handle` (`country_handle`),
+				  INDEX `neighborhood` (`neighborhood`),
+				  INDEX `neighborhood_handle` (`neighborhood_handle`),
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
 			);
+		}
+
+		public function convertObjectToArray($data)
+		{
+			if (is_array($data) || is_object($data))
+			{
+				$result = array();
+				foreach ($data as $key => $value)
+				{
+					$result[$key] = $this->convertObjectToArray($value);
+				}
+				return $result;
+			}
+			return $data;
+		}
+
+		public function buildXML($parent, $items) {
+			$items = $this->convertObjectToArray($items);
+			if(!is_array($items)) return;
+			// Create groups
+			$parent_element = new XMLElement($parent);
+			$this->itemsToXML($parent_element, $items);
+			return $parent_element;
+		}
+
+		public function itemsToXML($parent, $items) {
+			if(!is_array($items)) return;
+
+			foreach($items as $key => $value) {
+				$index = array();
+				if( is_numeric($key) ){
+					$index = array(
+						'index' => $key,
+					);
+					$key = 'item';
+				}
+				$item = new XMLElement($key, null, $index);
+
+				// Nested items
+				if(is_array($value)) {
+					$this->itemsToXML($item, $value);
+					$parent->appendChild($item);
+				}
+
+				// Other values
+				else {
+					$item->setValue($value);
+					$parent->appendChild($item);
+				}
+			}
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false)
@@ -253,15 +323,25 @@
 			));
 			$wrapper->appendChild($field);
 
-			foreach (array('street', 'city', 'region', 'postal_code', 'country') as $name)
+			foreach (array('street', 'city', 'region', 'postal_code', 'country', 'neighborhood') as $name)
 			{
 				if ($encode === TRUE){
 					$data[$name] = General::sanitize($data[$name]);
 				}
-				$element = new XMLElement(Lang::createHandle($this->get("{$name}_label")), $data[$name]);
+				$element_name = $this->get("{$name}_label");
+				if (!($element_name)){
+					$element_name = $name;
+				}
+
+				$element = new XMLElement(Lang::createHandle($element_name), $data[$name]);
 				$element->setAttribute('handle', Lang::createHandle($data[$name]));
 				$field->appendChild($element);
 			}
+
+			$result_element = $this->buildXML('result-data', json_decode($data['result_data']));
+			$field->appendChild($result_element);
+
+			// Add back Google Maps result data
 
 			if (count($this->_filter_origin['latitude']) > 0) {
 				$distance = new XMLElement('distance');
@@ -342,10 +422,13 @@
 				}
 				// otherwise the origin needs geocoding
 				else {
-					$geocode = $this->__geocodeAddress($origin);
-					if ($geocode) $geocode = explode(',', $geocode);
-					$lat = trim($geocode[0]);
-					$lng = trim($geocode[1]);
+					$geocoded_result = $this->__geocodeAddress($origin);
+					$coordinates = $geocoded_result->geometry->location;
+
+					if ($geocoded_result) {
+						$lat = $coordinates->lat;
+						$lng = $coordinates->lng;
+					}
 				}
 
 				// if we don't have a decent set of coordinates, we can't query
