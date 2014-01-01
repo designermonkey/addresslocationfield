@@ -14,6 +14,9 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="1.2.3" date="2014-01-01" min="2.3">
+			- Allow null for `result_data`
+		</release>
 		<release version="1.2.2" date="2013-12-30" min="2.3">
 			- Store entire Google Maps geocode result
 		</release>

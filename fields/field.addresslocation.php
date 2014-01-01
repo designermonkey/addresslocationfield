@@ -106,9 +106,11 @@
 			$geocoded_result = $this->__geocodeAddress(implode(',', $result));
 
 			$neighborhood = '';
-			foreach( $geocoded_result->address_components as $key=>$val) {
-				if( $val->types[0] == 'neighborhood') {
-					$neighborhood = $val->long_name;
+			if( is_object($geocoded_result) ) {
+				foreach( $geocoded_result->address_components as $key=>$val) {
+					if( $val->types[0] == 'neighborhood') {
+						$neighborhood = $val->long_name;
+					}
 				}
 			}
 
@@ -338,8 +340,11 @@
 				$field->appendChild($element);
 			}
 
-			$result_element = $this->buildXML('result-data', json_decode($data['result_data']));
-			$field->appendChild($result_element);
+			$result_data = json_decode($data['result_data']);
+			if( $result_data ) {
+				$result_element = $this->buildXML('result-data', $result_data);
+				$field->appendChild($result_element);
+			}
 
 			// Add back Google Maps result data
 
