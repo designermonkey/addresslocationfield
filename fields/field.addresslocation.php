@@ -133,7 +133,7 @@
 				'country_handle' => Lang::createHandle($data['country']),
 				'neighborhood' => $neighborhood,
 				'neighborhood_handle' => Lang::createHandle($neighborhood),
-				'result_data' => General::sanitize(json_encode($geocoded_result)),
+				'result_data' => json_encode($geocoded_result),
 			));
 			return $result;
 		}
@@ -311,7 +311,7 @@
 
 				// Other values
 				else {
-					$item->setValue($value);
+					$item->setValue(General::sanitize($value));
 					$parent->appendChild($item);
 				}
 			}
