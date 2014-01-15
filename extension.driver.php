@@ -10,13 +10,13 @@
 		public function update($previousVersion){
 			$addresslocation_entry_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_addresslocation`");
 
-			if(version_compare($previousVersion, '1.2.3', '<')){
+			if(version_compare($previousVersion, '1.2.1', '<')){
 				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
 				{
 					foreach($addresslocation_entry_tables as $field)
 					{
 						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` MODIFY COLUMN `result_data` blob",
+							"ALTER TABLE `tbl_entries_data_%d` ADD `result_data` blob",
 							$field
 						));
 					}
@@ -35,14 +35,14 @@
 					}
 				}
 			}
-
-			if(version_compare($previousVersion, '1.2.1', '<')){
+			
+			if(version_compare($previousVersion, '1.2.3', '<')){
 				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
 				{
 					foreach($addresslocation_entry_tables as $field)
 					{
 						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` ADD `result_data` blob",
+							"ALTER TABLE `tbl_entries_data_%d` MODIFY COLUMN `result_data` blob",
 							$field
 						));
 					}
