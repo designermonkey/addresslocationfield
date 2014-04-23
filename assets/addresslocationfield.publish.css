@@ -18,28 +18,23 @@ div.field-addresslocation p {
 }
 div.field-addresslocation label {
 	float: left;
-	clear: left;
-	margin-bottom: 0em;
+	margin-bottom: 0.5em;
+	width: 47%;
+	margin-right: 3%;
 }
-div.field-addresslocation label.street,
-div.field-addresslocation label.city {
-	margin-top: 0.5em;
+div.field-addresslocation label.street {
+	width: 97%;
 }
 div.field-addresslocation label.street,
 div.field-addresslocation label.region,
 div.field-addresslocation label.latitude,
 div.field-addresslocation label.country {
-	width: 46%;
 }
 div.field-addresslocation label.country {
-	clear: both;
 }
 div.field-addresslocation label.city,
 div.field-addresslocation label.postal-code,
 div.field-addresslocation label.longitude {
-	width: 46%;
-	float: right;
-	clear: right;
 }
 div.field-addresslocation label.latitude input,
 div.field-addresslocation label.longitude input {
@@ -50,6 +45,7 @@ div.field-addresslocation label input {
 }
 div.field-addresslocation label.locate {
 	width: 100%;
+	margin-top: 1em;
 }
 div.field-addresslocation label.locate a.mapswitch {
 	float: right;
@@ -57,19 +53,19 @@ div.field-addresslocation label.locate a.mapswitch {
 }
 div.field-addresslocation label.locate input {
 	float: left;
-	width: 25%;
+	width: 47%;
 	clear: none;
 	margin-right: 3%;
 }
 
 div.field-addresslocation div.main {
-	width: 50%;
+	width: 60%;
 	float: left;
 }
 div.field-addresslocation div.main.map {
 	float: right;
-	height: 280px;
-	width: 48%;
+	height: 220px;
+	width: 40%;
 }
 
 div.field-addresslocation div.sidebar {
@@ -81,4 +77,7 @@ div.field-addresslocation div.sidebar.map {
 	margin-top: 15px;
 	height: 200px;
 	float: left;
+}
+div.field-addresslocation div.gm-style-cc {
+	display: none;
 }

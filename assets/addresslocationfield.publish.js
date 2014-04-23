@@ -26,44 +26,45 @@
 		map =  new google.maps.Map($('div.field-addresslocation div.map')[0], {
 			center: new google.maps.LatLng(0,0),
 			zoom: 1,
-			MapTypeId: google.maps.MapTypeId.ROADMAP
+			MapTypeId: google.maps.MapTypeId.ROADMAP,
+			mapTypeControl: false
 		});
-		
+
 		field = $('div.field-addresslocation');
 		lat = field.find('label.latitude input');
 		lng = field.find('label.longitude input');
-		
+
 		if(lat.val() && lng.val()){
 			var latlng = new google.maps.LatLng(lat.val(), lng.val());
 			map.setCenter(latlng);
-			map.setZoom(16);
+			//map.setZoom(16);
 			SetMarker(latlng);
 			helpers.toggleFieldState(field.find('label.locate input[name="locate"]'), true);
 		}
 		else{
 			helpers.toggleFieldState(field.find('label.locate input[name="clear"]'), true);
 		}
-		
+
 		field.find('label.locate input[name="clear"]').click(function(ev){
-			
+
 			ev.preventDefault();
-			
+
 			var fields = field.find('label.street input, label.city input, label.region input, label.postal-code input, label.country input, label.latitude input, label.longitude input');
-			
+
 			fields.val('');
-			
+
 			marker.setMap(null);
 			map.setCenter(new google.maps.LatLng(0,0));
 			map.setZoom(1);
-			
+
 			field.find('label.locate input[name="locate"]').removeAttr('disabled');
-			
+
 		});
-		
+
 		if(field.find('div.address').hasClass('sidebar')){
-			
+
 			var a = $('<a class="mapswitch" href="#">[-] Hide Map</a>').appendTo('label.locate')
-			
+
 			field.delegate('label.locate a.mapswitch', 'click', function(ev){
 				console.log('clicked');
 				ev.preventDefault();
@@ -78,26 +79,26 @@
 				}
 			});
 		}
-		
+
 
 		field.find('label.locate input[name="locate"]').click(function(ev){
-			
+
 			//Reassign field to stop mime warning/error
 			var field = $('div.field-addresslocation');
 			var button = $(this);
-			
+
 			var button_value = button.val();
 			button.val('Geocoding...').attr('disabled', 'disabled');
 			button.parent('label').find('i').remove();
-			
+
 			ev.preventDefault();
-			
+
 			var street = field.find('label.street input').val(),
 				city = field.find('label.city input').val(),
 				region = field.find('label.region input').val(),
 				postalcode = field.find('label.postal-code input').val(),
 				country = field.find('label.country input').val();
-				
+
 			var address = '';
 			if(street) address += street;
 			if(city) address += ', ' + city;
@@ -132,7 +133,7 @@
 			}
 		});
 	}
-	
+
 	function SetLatLng(latlng){
 		field = $('div.field-addresslocation');
 		lat = field.find('label.latitude input');
@@ -140,7 +141,7 @@
 		lat.val(latlng.lat().toFixed(7));
 		lng.val(latlng.lng().toFixed(7));
 	}
-	
+
 	function SetMarker(latlng){
 		if($.isEmptyObject(marker)){
 			marker = new google.maps.Marker({
@@ -156,16 +157,16 @@
 			marker.setMap(map);
 		}
 
-		map.setZoom(16);
+		map.setZoom(15);
 		map.setCenter(marker.getPosition());
 		SetLatLng(latlng);
-		
+
 		google.maps.event.addListener(marker, "dragend", function(){
 			SetLatLng(marker.getPosition());
 			map.setCenter(marker.getPosition());
 		});
 	}
-	
+
 	$(document).ready(function(){
 		addresslocationField();
 	});

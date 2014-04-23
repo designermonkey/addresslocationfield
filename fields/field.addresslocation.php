@@ -19,7 +19,7 @@
 			$this->_name = 'Address Location';
 			$this->_driver = Symphony::ExtensionManager()->create('addresslocationfield');
 		}
-		
+
 		private function __geocodeAddress($address)
 		{
 			$coordinates = null;
@@ -43,25 +43,28 @@
 					Symphony::Log()->pushToLog($err, E_ERROR, true);
 				}
 
-				$coordinates = $response->results[0]->geometry->location;
+				$result = $response->results[0];
+				//$coordinates = $result->geometry->location;
+				//$address_components = $result->address_components;
 
 				if ($coordinates && is_object($coordinates)) {
-					$cache->write($cache_id, $coordinates->lat . ', ' . $coordinates->lng, $this->_geocode_cache_expire); // cache lifetime in minutes
+					$cache->write($cache_id, json_encode($result), $this->_geocode_cache_expire); // cache lifetime in minutes
 				}
 
 			}
 			// fill data from the cache
 			else {
-				$coordinates = $cachedData['data'];
+				$result = json_decode($cachedData['data']);
 			}
-			// coordinates is an array, split and return
+			/*// coordinates is an array, split and return
 			if ($coordinates && is_object($coordinates)) {
 				return $coordinates->lat . ', ' . $coordinates->lng;
 			}
 			// return comma delimeted string
 			elseif ($coordinates) {
 				return "$coordinates";
-			}
+			}*/
+			return $result;
 		}
 
 		public function mustBeUnique()
@@ -80,7 +83,7 @@
 
 			$this->appendGroup($wrapper, array('street' => 'Street', 'city' => 'City'));
 			$this->appendGroup($wrapper, array('region' => 'Region', 'postal_code' => 'Postal Code'));
-			
+
 			$group = $this->appendGroup($wrapper, array('country' => 'Country'));
 
 			$this->appendShowColumnCheckbox($group);
@@ -90,7 +93,7 @@
 		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null)
 		{
 			$status = self::__OK__;
-			
+
 			if(!is_array($data) || empty($data)) return null;
 
 			$result = array(
@@ -100,16 +103,27 @@
 				'postal_code' => General::sanitize($data['postal_code']),
 				'country' => General::sanitize($data['country']),
 			);
+			$geocoded_result = $this->__geocodeAddress(implode(',', $result));
+
+			$neighborhood = '';
+			if( is_object($geocoded_result) ) {
+				foreach( $geocoded_result->address_components as $key=>$val) {
+					if( $val->types[0] == 'neighborhood') {
+						$neighborhood = $val->long_name;
+					}
+				}
+			}
+
 			if($data['latitude'] == '' || $data['longitude'] == ''){
-				$coordinates = explode(',',$this->__geocodeAddress(implode(',', $result)));
-				$result['latitude'] = trim($coordinates[0]);
-				$result['longitude'] = trim($coordinates[1]);
+				$coordinates = $geocoded_result->geometry->location;
+				$result['latitude'] = $coordinates->lat;
+				$result['longitude'] = $coordinates->lng;
 			}
 			elseif($data['latitude'] != '' && $data['longitude'] != ''){
 				$result['latitude'] = $data['latitude'];
 				$result['longitude'] = $data['longitude'];
 			}
-			
+
 			$result = array_merge($result, array(
 				'entry_id' => $entry_id,
 				'street_handle' => Lang::createHandle($data['street']),
@@ -117,6 +131,9 @@
 				'region_handle' => Lang::createHandle($data['region']),
 				'postal_code_handle' => Lang::createHandle($data['postal_code']),
 				'country_handle' => Lang::createHandle($data['country']),
+				'neighborhood' => $neighborhood,
+				'neighborhood_handle' => Lang::createHandle($neighborhood),
+				'result_data' => json_encode($geocoded_result),
 			));
 			return $result;
 		}
@@ -153,16 +170,16 @@
 			// input values, from data or defaults
 			$coordinates = ($data['latitude'] && $data['longitude']) ? array($data['latitude'], $data['longitude']) : explode(',',$this->get('default_location_coords'));
 			$class = $this->get('location');
-			
+
 			$label = new XMLElement('p', $this->get('label'));
 			$label->setAttribute('class', 'title');
 			$wrapper->appendChild($label);
-			
+
 			// Address Fields
 			$address = new XMLElement('div');
 			$address->setAttribute('class', 'address '.$class);
 			$wrapper->appendChild($address);
-			
+
 			$label = Widget::Label($this->get('street_label'));
 			$label->setAttribute('class', 'street');
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][street]'.$fieldnamePostfix, $data['street']));
@@ -187,7 +204,7 @@
 			$label->setAttribute('class', 'country');
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][country]'.$fieldnamePostfix, $data['country']));
 			$address->appendChild($label);
-	
+
 			$label = Widget::Label('Latitude');
 			$label->setAttribute('class', 'latitude');
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][latitude]'.$fieldnamePostfix, $coordinates[0], 'text', array('readonly' => 'readonly')));
@@ -200,10 +217,10 @@
 
 			$label = Widget::Label();
 			$label->setAttribute('class', 'locate');
-			$label->appendChild(Widget::Input('locate', 'Locate on map', 'button'));
-			$label->appendChild(Widget::Input('clear', 'Clear Address', 'button'));
+			$label->appendChild(Widget::Input('locate', 'Geocode Address', 'button', array('class' => 'button')));
+			$label->appendChild(Widget::Input('clear', 'Clear Address', 'button', array('class' => 'button')));
 			$address->appendChild($label);
-			
+
 			$map = new XMLElement('div');
 			$map->setAttribute('class', 'map '.$class.' open');
 			$wrapper->appendChild($map);
@@ -227,6 +244,9 @@
 				  `country_handle` varchar(255),
 				  `latitude` double default NULL,
 				  `longitude` double default NULL,
+				  `neighborhood` varchar(255),
+				  `neighborhood_handle` varchar(255),
+				  `result_data` blob NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
 				  KEY `latitude` (`latitude`),
@@ -240,9 +260,61 @@
 				  INDEX `postal_code` (`postal_code`),
 				  INDEX `postal_code_handle` (`postal_code_handle`),
 				  INDEX `country` (`country`),
-				  INDEX `country_handle` (`country_handle`)
+				  INDEX `country_handle` (`country_handle`),
+				  INDEX `neighborhood` (`neighborhood`),
+				  INDEX `neighborhood_handle` (`neighborhood_handle`),
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
 			);
+		}
+
+		public function convertObjectToArray($data)
+		{
+			if (is_array($data) || is_object($data))
+			{
+				$result = array();
+				foreach ($data as $key => $value)
+				{
+					$result[$key] = $this->convertObjectToArray($value);
+				}
+				return $result;
+			}
+			return $data;
+		}
+
+		public function buildXML($parent, $items) {
+			$items = $this->convertObjectToArray($items);
+			if(!is_array($items)) return;
+			// Create groups
+			$parent_element = new XMLElement($parent);
+			$this->itemsToXML($parent_element, $items);
+			return $parent_element;
+		}
+
+		public function itemsToXML($parent, $items) {
+			if(!is_array($items)) return;
+
+			foreach($items as $key => $value) {
+				$index = array();
+				if( is_numeric($key) ){
+					$index = array(
+						'index' => $key,
+					);
+					$key = 'item';
+				}
+				$item = new XMLElement($key, null, $index);
+
+				// Nested items
+				if(is_array($value)) {
+					$this->itemsToXML($item, $value);
+					$parent->appendChild($item);
+				}
+
+				// Other values
+				else {
+					$item->setValue(General::sanitize($value));
+					$parent->appendChild($item);
+				}
+			}
 		}
 
 		public function appendFormattedElement(&$wrapper, $data, $encode = false)
@@ -252,16 +324,29 @@
 				'longitude' => $data['longitude']
 			));
 			$wrapper->appendChild($field);
-			
-			foreach (array('street', 'city', 'region', 'postal_code', 'country') as $name)
+
+			foreach (array('street', 'city', 'region', 'postal_code', 'country', 'neighborhood') as $name)
 			{
 				if ($encode === TRUE){
 					$data[$name] = General::sanitize($data[$name]);
 				}
-				$element = new XMLElement(Lang::createHandle($this->get("{$name}_label")), $data[$name]);
+				$element_name = $this->get("{$name}_label");
+				if (!($element_name)){
+					$element_name = $name;
+				}
+
+				$element = new XMLElement(Lang::createHandle($element_name), $data[$name]);
 				$element->setAttribute('handle', Lang::createHandle($data[$name]));
 				$field->appendChild($element);
 			}
+
+			$result_data = json_decode($data['result_data']);
+			if( $result_data ) {
+				$result_element = $this->buildXML('result-data', $result_data);
+				$field->appendChild($result_element);
+			}
+
+			// Add back Google Maps result data
 
 			if (count($this->_filter_origin['latitude']) > 0) {
 				$distance = new XMLElement('distance');
@@ -276,7 +361,7 @@
 		public function prepareTableValue($data, XMLElement $link = null)
 		{
 			if (empty($data)) return;
-			
+
 			$string = '';
 			if($data['street']) $string .= $data['street'];
 			if($data['city']) $string .= ', '.$data['city'];
@@ -284,7 +369,7 @@
 			if($data['postal_code']) $string .= ', '.$data['postal_code'];
 			if($data['country']) $string .= ', '.$data['country'];
 			$string .= ' ('.$data['latitude'] . ', ' . $data['longitude'].')';
-			
+
 			return trim($string,", ");
 		}
 
@@ -293,15 +378,15 @@
 
 			$columns_to_labels = array();
 			$where_array = array();
-			
+
 			foreach (array('street', 'city', 'region', 'postal_code', 'country') as $name)
 			{
 				$columns_to_labels[Lang::createHandle($this->get("{$name}_label"))] = $name;
 			}
-			
+
 			$columns = implode('|', array_keys($columns_to_labels));
 			$this->_key++;
-			
+
 			// Symphony by default splits filters by commas. We want commas, so
 			// concatenate filters back together again putting commas back in
 			$data = join(',', $data);
@@ -311,7 +396,7 @@
 
 				$column = $columns_to_labels[$filters[1]];
 				$value = $filters[2];
-				
+
 				$where .= " AND (
 					t{$field_id}_{$this->_key}.{$column} = '{$value}'
 					OR t{$field_id}_{$this->_key}.{$column}_handle = '{$value}'
@@ -342,10 +427,13 @@
 				}
 				// otherwise the origin needs geocoding
 				else {
-					$geocode = $this->__geocodeAddress($origin);
-					if ($geocode) $geocode = explode(',', $geocode);
-					$lat = trim($geocode[0]);
-					$lng = trim($geocode[1]);
+					$geocoded_result = $this->__geocodeAddress($origin);
+					$coordinates = $geocoded_result->geometry->location;
+
+					if ($geocoded_result) {
+						$lat = $coordinates->lat;
+						$lng = $coordinates->lng;
+					}
 				}
 
 				// if we don't have a decent set of coordinates, we can't query
@@ -371,25 +459,25 @@
 			return true;
 
 		}
-		
-		
+
+
 		// Helper functions
 		private function appendGroup(&$wrapper, $fields = array())
 		{
 			$group = new XMLElement('div');
 			$group->setAttribute('class', 'group');
 			$wrapper->appendChild($group);
-			
+
 			foreach ($fields as $name => $text)
 			{
 				$label = Widget::Label(__("Label for $text Field"));
 				$group->appendChild($label);
-				
+
 				$value = ($this->get("{$name}_label") ? $this->get("{$name}_label") : $text);
 				$input = Widget::Input("fields[{$this->get('sortorder')}][{$name}_label]", $value);
 				$label->appendChild($input);
 			}
-			
+
 			return $group;
 		}
 	}
