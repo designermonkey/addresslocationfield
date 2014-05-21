@@ -262,7 +262,7 @@
 				  INDEX `country` (`country`),
 				  INDEX `country_handle` (`country_handle`),
 				  INDEX `neighborhood` (`neighborhood`),
-				  INDEX `neighborhood_handle` (`neighborhood_handle`),
+				  INDEX `neighborhood_handle` (`neighborhood_handle`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
 			);
 		}
