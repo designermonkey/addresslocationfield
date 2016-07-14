@@ -35,7 +35,7 @@
 
 				$ch = new Gateway;
 				$ch->init();
-				$ch->setopt('URL', 'http://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($address).'&sensor=false');
+				$ch->setopt('URL', 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($address).'&sensor=false');
 				$response = json_decode($ch->exec());
 
 				if (isset($response->error_message)) {
@@ -163,7 +163,7 @@
 		{
 			if (Administration::instance()->Page) {
 				Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.css', 'screen', 78);
-				Administration::instance()->Page->addScriptToHead('http://maps.google.com/maps/api/js?sensor=false', 79);
+				Administration::instance()->Page->addScriptToHead('https://maps.google.com/maps/api/js?sensor=false', 79);
 				Administration::instance()->Page->addScriptToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.js', 80);
 			}
 
