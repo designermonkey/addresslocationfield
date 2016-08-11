@@ -14,6 +14,12 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="1.2.4" date="2016-08-11" min="2.3">
+			- Supported on PHP 7
+			- Removed sensor
+			- Added a key that you can set via config.php
+			- Fixes on database update and params to fit the parent method
+		</release>
 		<release version="1.2.3" date="2014-01-01" min="2.3">
 			- Allow null for `result_data`
 		</release>
