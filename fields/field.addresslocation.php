@@ -77,7 +77,7 @@
 			return true;
 		}
 
-		function displaySettingsPanel(&$wrapper, $errors=NULL)
+		function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL)
 		{
 			parent::displaySettingsPanel($wrapper, $errors);
 
@@ -159,7 +159,7 @@
 			Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		function displayPublishPanel(&$wrapper, $data=NULL, $flagWithError=NULL, $fieldnamePrefix=NULL, $fieldnamePostfix=NULL)
+		function displayPublishPanel(XMLElement &$wrapper, $data = NULL, $flagWithError = NULL, $fieldnamePrefix = NULL, $fieldnamePostfix = NULL, $entry_id = NULL)
 		{
 			if (Administration::instance()->Page) {
 				Administration::instance()->Page->addStylesheetToHead(URL . '/extensions/addresslocationfield/assets/addresslocationfield.publish.css', 'screen', 78);
@@ -317,7 +317,7 @@
 			}
 		}
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false)
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = NULL, $entry_id = NULL)
 		{
 			$field = new XMLElement($this->get('element_name'), null, array(
 				'latitude' => $data['latitude'],
@@ -358,7 +358,7 @@
 
 		}
 
-		public function prepareTableValue($data, XMLElement $link = null)
+		public function prepareTableValue($data, XMLElement $link = NULL, $entry_id = NULL)
 		{
 			if (empty($data)) return;
 

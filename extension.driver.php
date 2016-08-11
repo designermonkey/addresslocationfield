@@ -7,7 +7,7 @@
 			Symphony::Database()->query("DROP TABLE `tbl_fields_addresslocation`");
 		}
 
-		public function update($previousVersion){
+		public function update($previousVersion = false){
 			$addresslocation_entry_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_addresslocation`");
 
 			if(version_compare($previousVersion, '1.2.1', '<')){
