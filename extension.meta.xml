@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<extension id="addresslocationfield" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
+<extension id="addresslocationfield" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
 	<name>Address Location Field</name>
 	<description>Geocode an address, then refine the latlng returned for precision.</description>
 	<repo type="github">https://github.com/designermonkey/addresslocationfield</repo>
-	<url type="discuss">http://symphony-cms.com/discuss/thread/70238/</url>
+	<url type="discuss">http://getsymphony.com/discuss/thread/70238/</url>
 	<types>
 		<type>Field Types</type>
 	</types>
@@ -14,10 +14,10 @@
 		</author>
 	</authors>
 	<releases>
-		<release version="1.2.4" date="2016-08-11" min="2.3">
+		<release version="1.3.0" date="2016-10-31" min="2.3" max="2.6.x">
 			- Supported on PHP 7
 			- Removed sensor
-			- Added a key that you can set via config.php
+			- Added a config entr to Google API key (must be set via config.php)
 			- Fixes on database update and params to fit the parent method
 		</release>
 		<release version="1.2.3" date="2014-01-01" min="2.3">
