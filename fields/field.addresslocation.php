@@ -219,11 +219,11 @@
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][longitude]'.$fieldnamePostfix, $coordinates[1], 'text', array('readonly' => 'readonly')));
 			$address->appendChild($label);
 
-			$label = Widget::Label();
-			$label->setAttribute('class', 'locate');
-			$label->appendChild(Widget::Input('locate', 'Geocode Address', 'button', array('class' => 'button')));
-			$label->appendChild(Widget::Input('clear', 'Clear Address', 'button', array('class' => 'button')));
-			$address->appendChild($label);
+			$div = new XMLElement('div');
+			$div->setAttribute('class', 'locate');
+			$div->appendChild(Widget::Input('locate', 'Geocode Address', 'button', array('class' => 'button')));
+			$div->appendChild(Widget::Input('clear', 'Clear Address', 'button', array('class' => 'button')));
+			$address->appendChild($div);
 
 			$map = new XMLElement('div');
 			$map->setAttribute('class', 'map '.$class.' open');
