@@ -70,7 +70,7 @@ div.field-addresslocation div.locate input:not(:disabled):hover {
 }
 
 div.field-addresslocation div.locate input:disabled {
-	opacity: 0.25;
+	opacity: 0.5;
 	pointer-events: none;
 }
 
