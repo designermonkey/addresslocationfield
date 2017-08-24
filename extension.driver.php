@@ -52,13 +52,13 @@
 					foreach($addresslocation_entry_tables as $field)
 					{
 						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` ADD `neighborhood` varchar(255), ADD `neighborhood_handle` varchar(255)",
+							"ALTER TABLE `tbl_entries_data_%d` ADD `neighborhood` VARCHAR(255), ADD `neighborhood_handle` VARCHAR(255)",
 							$field
 						));
 					}
 				}
 			}
-			
+
 			if(version_compare($previousVersion, '1.2.3', '<')){
 				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
 				{
@@ -78,13 +78,13 @@
 		public function install()
 		{
 			return Symphony::Database()->query("CREATE TABLE `tbl_fields_addresslocation` (
-				`id` int(11) unsigned NOT NULL auto_increment,
-				`field_id` int(11) unsigned NOT NULL,
-				`street_label` varchar(80) NOT NULL,
-				`city_label` varchar(80) NOT NULL,
-				`region_label` varchar(80) NOT NULL,
-				`postal_code_label` varchar(80) NOT NULL,
-				`country_label` varchar(80) NOT NULL,
+				`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				`field_id` INT(11) UNSIGNED NOT NULL,
+				`street_label` VARCHAR(80) NOT NULL,
+				`city_label` VARCHAR(80) NOT NULL,
+				`region_label` VARCHAR(80) NOT NULL,
+				`postal_code_label` VARCHAR(80) NOT NULL,
+				`country_label` VARCHAR(80) NOT NULL,
 				PRIMARY KEY (`id`),
 				UNIQUE KEY `field_id` (`field_id`)
 			) TYPE=MyISAM");
@@ -94,7 +94,7 @@
 			Modified from:
 			http://www.kevinbradwick.co.uk/developer/php/free-to-script-to-calculate-the-radius-of-a-coordinate-using-latitude-and-longitude
 		*/
-		public function geoRadius($lat, $lng, $rad, $kilometers=false)
+		public function geoRadius($lat, $lng, $rad, $kilometers = false)
 		{
 			$radius = ($kilometers) ? ($rad * 0.621371192) : $rad;
 

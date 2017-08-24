@@ -77,7 +77,7 @@
 			return true;
 		}
 
-		function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL)
+		function displaySettingsPanel(XMLElement &$wrapper, $errors = null)
 		{
 			parent::displaySettingsPanel($wrapper, $errors);
 
@@ -90,7 +90,7 @@
 
 		}
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null)
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null)
 		{
 			$status = self::__OK__;
 
@@ -159,7 +159,7 @@
 			Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
 		}
 
-		function displayPublishPanel(XMLElement &$wrapper, $data = NULL, $flagWithError = NULL, $fieldnamePrefix = NULL, $fieldnamePostfix = NULL, $entry_id = NULL)
+		function displayPublishPanel(XMLElement &$wrapper, $data = null, $flagWithError = null, $fieldnamePrefix = null, $fieldnamePostfix = null, $entry_id = null)
 		{
 			$key = Symphony::Configuration()->get('api_key','addresslocationfield');
 			if(empty($key)) {
@@ -234,22 +234,22 @@
 		{
 			return Symphony::Database()->query(
 				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `street` varchar(255),
-				  `street_handle` varchar(255),
-				  `city` varchar(255),
-				  `city_handle` varchar(255),
-				  `region` varchar(255),
-				  `region_handle` varchar(255),
-				  `postal_code` varchar(255),
-				  `postal_code_handle` varchar(255),
-				  `country` varchar(255),
-				  `country_handle` varchar(255),
-				  `latitude` double default NULL,
-				  `longitude` double default NULL,
-				  `neighborhood` varchar(255),
-				  `neighborhood_handle` varchar(255),
+				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+				  `entry_id` INT(11) UNSIGNED NOT NULL,
+				  `street` VARCHAR(255),
+				  `street_handle` VARCHAR(255),
+				  `city` VARCHAR(255),
+				  `city_handle` VARCHAR(255),
+				  `region` VARCHAR(255),
+				  `region_handle` VARCHAR(255),
+				  `postal_code` VARCHAR(255),
+				  `postal_code_handle` VARCHAR(255),
+				  `country` VARCHAR(255),
+				  `country_handle` VARCHAR(255),
+				  `latitude` DOUBLE DEFAULT NULL,
+				  `longitude` DOUBLE DEFAULT NULL,
+				  `neighborhood` VARCHAR(255),
+				  `neighborhood_handle` VARCHAR(255),
 				  `result_data` blob NOT NULL,
 				  PRIMARY KEY  (`id`),
 				  KEY `entry_id` (`entry_id`),
@@ -321,7 +321,7 @@
 			}
 		}
 
-		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = NULL, $entry_id = NULL)
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null)
 		{
 			$field = new XMLElement($this->get('element_name'), null, array(
 				'latitude' => $data['latitude'],
@@ -331,7 +331,7 @@
 
 			foreach (array('street', 'city', 'region', 'postal_code', 'country', 'neighborhood') as $name)
 			{
-				if ($encode === TRUE){
+				if ($encode === true){
 					$data[$name] = General::sanitize($data[$name]);
 				}
 				$element_name = $this->get("{$name}_label");
@@ -362,7 +362,7 @@
 
 		}
 
-		public function prepareTableValue($data, XMLElement $link = NULL, $entry_id = NULL)
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null)
 		{
 			if (empty($data)) return;
 
@@ -377,7 +377,7 @@
 			return trim($string,", ");
 		}
 
-		function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false)
+		function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false)
 		{
 
 			$columns_to_labels = array();
