@@ -178,11 +178,12 @@
 			$label = new XMLElement('p', $this->get('label'));
 			$label->setAttribute('class', 'title');
 			$wrapper->appendChild($label);
+			$wrapinner = new XMLElement('div', null, array('class' => 'main-wrapper'));
 
 			// Address Fields
 			$address = new XMLElement('div');
 			$address->setAttribute('class', 'address '.$class);
-			$wrapper->appendChild($address);
+			$wrapinner->appendChild($address);
 
 			$label = Widget::Label($this->get('street_label'));
 			$label->setAttribute('class', 'street');
@@ -227,7 +228,9 @@
 
 			$map = new XMLElement('div');
 			$map->setAttribute('class', 'map '.$class.' open');
-			$wrapper->appendChild($map);
+			$wrapinner->appendChild($map);
+
+			$wrapper->appendChild($wrapinner);
 		}
 
 		public function createTable()
