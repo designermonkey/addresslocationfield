@@ -26,7 +26,7 @@
 
 			$cache_id = md5('addresslocationfield_' . $address);
 			$cache = new Cacheable(Symphony::Database());
-			$cachedData = $cache->check($cache_id);
+			$cachedData = $cache->read($cache_id);
 
 			// no data has been cached
 			if(!$cachedData) {
@@ -146,17 +146,25 @@
 
 			if($id === false) return false;
 
-			$fields = array(
-				'field_id' => $id,
-				'street_label' => $this->get('street_label'),
-				'city_label' => $this->get('city_label'),
-				'region_label' => $this->get('region_label'),
-				'postal_code_label' => $this->get('postal_code_label'),
-				'country_label' => $this->get('country_label')
-			);
+			Symphony::Database()
+				->delete('tbl_fields_' . $this->handle())
+				->where(['field_id' => $id])
+				->limit(1)
+				->execute()
+				->success();
 
-			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
-			Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
+			Symphony::database()
+				->insert('tbl_fields_' . $this->handle())
+				->values([
+					'field_id' => $id,
+					'street_label' => $this->get('street_label'),
+					'city_label' => $this->get('city_label'),
+					'region_label' => $this->get('region_label'),
+					'postal_code_label' => $this->get('postal_code_label'),
+					'country_label' => $this->get('country_label'),
+				])
+				->execute()
+				->success();
 		}
 
 		function displayPublishPanel(XMLElement &$wrapper, $data = null, $flagWithError = null, $fieldnamePrefix = null, $fieldnamePostfix = null, $entry_id = null)
@@ -235,43 +243,59 @@
 
 		public function createTable()
 		{
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-				  `entry_id` INT(11) UNSIGNED NOT NULL,
-				  `street` VARCHAR(255),
-				  `street_handle` VARCHAR(255),
-				  `city` VARCHAR(255),
-				  `city_handle` VARCHAR(255),
-				  `region` VARCHAR(255),
-				  `region_handle` VARCHAR(255),
-				  `postal_code` VARCHAR(255),
-				  `postal_code_handle` VARCHAR(255),
-				  `country` VARCHAR(255),
-				  `country_handle` VARCHAR(255),
-				  `latitude` DOUBLE DEFAULT NULL,
-				  `longitude` DOUBLE DEFAULT NULL,
-				  `neighborhood` VARCHAR(255),
-				  `neighborhood_handle` VARCHAR(255),
-				  `result_data` blob NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`),
-				  KEY `latitude` (`latitude`),
-				  KEY `longitude` (`longitude`),
-				  INDEX `street` (`street`),
-				  INDEX `street_handle` (`street_handle`),
-				  INDEX `city` (`city`),
-				  INDEX `city_handle` (`city_handle`),
-				  INDEX `region` (`region`),
-				  INDEX `region_handle` (`region_handle`),
-				  INDEX `postal_code` (`postal_code`),
-				  INDEX `postal_code_handle` (`postal_code_handle`),
-				  INDEX `country` (`country`),
-				  INDEX `country_handle` (`country_handle`),
-				  INDEX `neighborhood` (`neighborhood`),
-				  INDEX `neighborhood_handle` (`neighborhood_handle`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
-			);
+			return Symphony::Database()
+				->create('tbl_entries_data_' . $this->get('id'))
+				->ifNotExists()
+				->charset('utf8')
+				->collate('utf8_unicode_ci')
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'entry_id' => 'int(11)',
+					'street' => 'varchar(255)',
+					'street_handle' => 'varchar(255)',
+					'city' => 'varchar(255)',
+					'city_handle' => 'varchar(255)',
+					'region' => 'varchar(255)',
+					'region_handle' => 'varchar(255)',
+					'postal_code' => 'varchar(255)',
+					'postal_code_handle' => 'varchar(255)',
+					'country' => 'varchar(255)',
+					'country_handle' => 'varchar(255)',
+					'latitude' => [
+						'type' => 'double',
+						'null' => true,
+					],
+					'longitude' => [
+						'type' => 'double',
+						'null' => true,
+					],
+					'neighborhood' => 'varchar(255)',
+					'neighborhood_handle' => 'varchar(255)',
+					'result_data' => 'blob',
+				])
+				->keys([
+					'id' => 'primary',
+					'entry_id' => 'key',
+					'latitude' => 'key',
+					'longitude' => 'key',
+					'street' => 'index',
+					'street_handle' => 'index',
+					'city' => 'index',
+					'city_handle' => 'index',
+					'region' => 'index',
+					'region_handle' => 'index',
+					'postal_code' => 'index',
+					'postal_code_handle' => 'index',
+					'country' => 'index',
+					'country_handle' => 'index',
+					'neighborhood' => 'index',
+					'neighborhood_handle' => 'index',
+				])
+				->execute()
+				->success();
 		}
 
 		public function convertObjectToArray($data)
