@@ -85,10 +85,7 @@ class EntryQueryAddressLocationAdapter extends EntryQueryFieldAdapter
         $conditions[] = [$this->formatColumn('latitude', $field_id) => ['between' => [$radius['latMIN'], $radius['latMAX']]]];
         $conditions[] = [$this->formatColumn('longitude', $field_id) => ['between' => [$radius['lonMIN'], $radius['lonMAX']]]];
 
-        if (count($conditions) < 2) {
-            return $conditions;
-        }
-        return ['or' => $conditions];
+        return ['and' => $conditions];
     }
 
     /**
