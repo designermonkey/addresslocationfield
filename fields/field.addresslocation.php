@@ -1,26 +1,29 @@
 <?php
 
 	require_once(CORE . '/class.cacheable.php');
+	require_once EXTENSIONS . '/addresslocationfield/lib/class.entryqueryaddresslocationadapter.php';
 
 	Class fieldAddressLocation extends Field{
 
-		private $_driver;
+		public $driver;
 		private $_geocode_cache_expire = 60; // minutes
 
 		// defaults used when user doesn't enter defaults when adding field to section
 		private $_default_location = 'London, England';
 		private $_default_coordinates = '51.58129468879224, -0.554702996875005'; // London, England
 
-		private $_filter_origin = array();
+		public $filter_origin = array();
 
 		public function __construct()
 		{
 			parent::__construct();
+			$this->entryQueryFieldAdapter = new EntryQueryAddressLocationAdapter($this);
+
 			$this->_name = 'Address Location';
-			$this->_driver = Symphony::ExtensionManager()->create('addresslocationfield');
+			$this->driver = Symphony::ExtensionManager()->create('addresslocationfield');
 		}
 
-		private function __geocodeAddress($address)
+		public function geocodeAddress($address)
 		{
 			$coordinates = null;
 
@@ -103,7 +106,7 @@
 				'postal_code' => General::sanitize($data['postal_code']),
 				'country' => General::sanitize($data['country']),
 			);
-			$geocoded_result = $this->__geocodeAddress(implode(',', $result));
+			$geocoded_result = $this->geocodeAddress(implode(',', $result));
 
 			$neighborhood = '';
 			if( is_object($geocoded_result) ) {
@@ -379,11 +382,11 @@
 
 			// Add back Google Maps result data
 
-			if (count($this->_filter_origin['latitude']) > 0) {
+			if (count($this->filter_origin['latitude']) > 0) {
 				$distance = new XMLElement('distance');
-				$distance->setAttribute('from', $this->_filter_origin['latitude'] . ',' . $this->_filter_origin['longitude']);
-				$distance->setAttribute('distance', $this->_driver->geoDistance($this->_filter_origin['latitude'], $this->_filter_origin['longitude'], $data['latitude'], $data['longitude'], $this->_filter_origin['unit']));
-				$distance->setAttribute('unit', ($this->_filter_origin['unit'] == 'k') ? 'km' : 'miles');
+				$distance->setAttribute('from', $this->filter_origin['latitude'] . ',' . $this->filter_origin['longitude']);
+				$distance->setAttribute('distance', $this->driver->geoDistance($this->filter_origin['latitude'], $this->filter_origin['longitude'], $data['latitude'], $data['longitude'], $this->filter_origin['unit']));
+				$distance->setAttribute('unit', ($this->filter_origin['unit'] == 'k') ? 'km' : 'miles');
 				$field->appendChild($distance);
 			}
 
@@ -402,6 +405,22 @@
 			$string .= ' ('.$data['latitude'] . ', ' . $data['longitude'].')';
 
 			return trim($string,", ");
+		}
+
+		public function fetchFilterableOperators()
+		{
+			return array(
+				array(
+					'title'				=> 'in',
+					'filter'			=> 'in:',
+					'help'				=> __('Find values that match the given query.')
+				),
+				array(
+					'title'				=> 'within',
+					'filter'			=> 'within:',
+					'help'				=> __('Find values that match the given query.')
+				),
+			);
 		}
 
 		function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false)
@@ -458,7 +477,7 @@
 				}
 				// otherwise the origin needs geocoding
 				else {
-					$geocoded_result = $this->__geocodeAddress($origin);
+					$geocoded_result = $this->geocodeAddress($origin);
 					$coordinates = $geocoded_result->geometry->location;
 
 					if ($geocoded_result) {
@@ -470,12 +489,12 @@
 				// if we don't have a decent set of coordinates, we can't query
 				if (is_null($lat) || is_null($lng)) return true;
 
-				$this->_filter_origin['latitude'] = $lat;
-				$this->_filter_origin['longitude'] = $lng;
-				$this->_filter_origin['unit'] = $unit[0];
+				$this->filter_origin['latitude'] = $lat;
+				$this->filter_origin['longitude'] = $lng;
+				$this->filter_origin['unit'] = $unit[0];
 
 				// build the bounds within the query should look
-				$radius = $this->_driver->geoRadius($lat, $lng, $radius, ($unit[0] == 'k'));
+				$radius = $this->driver->geoRadius($lat, $lng, $radius, ($unit[0] == 'k'));
 
 				$where .= sprintf(
 					" AND `t%d`.`latitude` BETWEEN %s AND %s AND `t%d`.`longitude` BETWEEN %s AND %s",
