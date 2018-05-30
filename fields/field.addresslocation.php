@@ -412,13 +412,13 @@
 			return array(
 				array(
 					'title'				=> 'in',
-					'filter'			=> 'in:',
-					'help'				=> __('Find values that match the given query.')
+					'filter'			=> 'in ',
+					'help'				=> __('in street|city|region|postal_code|country of %s')
 				),
 				array(
 					'title'				=> 'within',
-					'filter'			=> 'within:',
-					'help'				=> __('Find values that match the given query.')
+					'filter'			=> 'within ',
+					'help'				=> __('Within %skm|mile|miles of %s')
 				),
 			);
 		}
