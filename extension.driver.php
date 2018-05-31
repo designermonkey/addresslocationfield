@@ -91,7 +91,7 @@
 
 		public function install()
 		{
-			Symphony::Database()
+			return Symphony::Database()
 				->create('tbl_fields_addresslocation')
 				->ifNotExists()
 				->fields([
