@@ -275,8 +275,14 @@
 						'type' => 'double',
 						'null' => true,
 					],
-					'neighborhood' => 'varchar(255)',
-					'neighborhood_handle' => 'varchar(255)',
+					'neighborhood' => [
+						'type' => 'varchar(255)',
+						'null' => true,
+					],
+					'neighborhood_handle' => [
+						'type' => 'varchar(255)',
+						'null' => true,
+					],
 					'result_data' => 'blob',
 				])
 				->keys([

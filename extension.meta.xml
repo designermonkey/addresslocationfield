@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension id="addresslocationfield" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
-	<name>Address Location Field</name>
+	<name>Field: Address Location</name>
 	<description>Geocode an address, then refine the latlng returned for precision.</description>
 	<repo type="github">https://github.com/designermonkey/addresslocationfield</repo>
 	<url type="discuss">http://getsymphony.com/discuss/thread/70238/</url>
