@@ -1,6 +1,29 @@
 <?php
 
-	Class extension_addresslocationfield extends Extension{
+	Class extension_addresslocationfield extends Extension {
+
+		public function getSubscribedDelegates()
+		{
+			return array(
+				array(
+					'page' => '/system/preferences/',
+					'delegate' => 'AddCustomPreferenceFieldsets',
+					'callback' => 'addCustomPreferenceFieldsets'
+				)
+			);
+		}
+
+		public function addCustomPreferenceFieldsets($context) {
+			$currentSettings = Symphony::Configuration()->get('addresslocationfield');
+			$settingsCtn = new XMLElement('fieldset');
+			$settingsCtn->addClass('settings');
+			$legend = new XMLElement('legend', 'Address Location Field');
+			$settingsCtn->appendChild($legend);
+			$label = new XMLElement('label', 'API Key');
+			$label->appendChild(Widget::Input('settings[addresslocationfield][api_key]', $currentSettings['api_key'], 'text'));
+			$settingsCtn->appendChild($label);
+			$context['wrapper']->appendChild($settingsCtn);
+		}
 
 		public function uninstall()
 		{
