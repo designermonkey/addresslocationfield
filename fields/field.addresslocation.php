@@ -386,7 +386,7 @@
 
 			// Add back Google Maps result data
 
-			if (count($this->filter_origin['latitude']) > 0) {
+			if (!empty($this->filter_origin['latitude'])) {
 				$distance = new XMLElement('distance');
 				$distance->setAttribute('from', $this->filter_origin['latitude'] . ',' . $this->filter_origin['longitude']);
 				$distance->setAttribute('distance', $this->driver->geoDistance($this->filter_origin['latitude'], $this->filter_origin['longitude'], $data['latitude'], $data['longitude'], $this->filter_origin['unit']));
