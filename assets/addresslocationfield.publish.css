@@ -74,7 +74,7 @@ div.field-addresslocation div.main-wrapper {
 	border: 1px solid #d3dce2;
 }
 
-div.field-addresslocation div.main.address {
+div.field-addresslocation div.address {
 	display: flex;
 	flex-direction: row;
 	align-items: flex-start;
@@ -83,7 +83,7 @@ div.field-addresslocation div.main.address {
 	width: calc(100% + 3rem);
 }
 
-div.field-addresslocation div.main.map {
+div.field-addresslocation div.map {
 	width: 100%;
 	height: 200px;
 }
