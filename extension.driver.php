@@ -27,21 +27,30 @@
 
 		public function uninstall()
 		{
-			Symphony::Database()->query("DROP TABLE `tbl_fields_addresslocation`");
+			return Symphony::Database()
+				->drop('tbl_fields_addresslocation')
+				->ifExists()
+				->execute()
+				->success();
 		}
 
 		public function update($previousVersion = false){
-			$addresslocation_entry_tables = Symphony::Database()->fetchCol("field_id", "SELECT `field_id` FROM `tbl_fields_addresslocation`");
+			$addresslocation_entry_tables = Symphony::Database()
+				->select(['field_id'])
+				->from('tbl_fields_addresslocation')
+				->execute()
+				->column('field_id');
 
 			if(version_compare($previousVersion, '1.2.1', '<')){
 				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
 				{
 					foreach($addresslocation_entry_tables as $field)
 					{
-						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` ADD `result_data` blob",
-							$field
-						));
+						Symphony::Database()
+							->alter("tbl_entries_data_$field")
+							->add(['result_data' => 'blob'])
+							->execute()
+							->success();
 					}
 				}
 			}
@@ -51,23 +60,28 @@
 				{
 					foreach($addresslocation_entry_tables as $field)
 					{
-						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` ADD `neighborhood` varchar(255), ADD `neighborhood_handle` varchar(255)",
-							$field
-						));
+						Symphony::Database()
+							->alter("tbl_entries_data_$field")
+							->add([
+								'neighborhood' => 'varchar(255)',
+								'neighborhood_handle' => 'varchar(255)',
+							])
+							->execute()
+							->success();
 					}
 				}
 			}
-			
+
 			if(version_compare($previousVersion, '1.2.3', '<')){
 				if(is_array($addresslocation_entry_tables) && !empty($addresslocation_entry_tables))
 				{
 					foreach($addresslocation_entry_tables as $field)
 					{
-						Symphony::Database()->query(sprintf(
-							"ALTER TABLE `tbl_entries_data_%d` MODIFY COLUMN `result_data` blob",
-							$field
-						));
+						Symphony::Dabatase()
+							->alter("tbl_entries_data_$field")
+							->modify(['result_data' => 'blob'])
+							->execute()
+							->success();
 					}
 				}
 			}
@@ -77,24 +91,34 @@
 
 		public function install()
 		{
-			return Symphony::Database()->query("CREATE TABLE `tbl_fields_addresslocation` (
-				`id` int(11) unsigned NOT NULL auto_increment,
-				`field_id` int(11) unsigned NOT NULL,
-				`street_label` varchar(80) NOT NULL,
-				`city_label` varchar(80) NOT NULL,
-				`region_label` varchar(80) NOT NULL,
-				`postal_code_label` varchar(80) NOT NULL,
-				`country_label` varchar(80) NOT NULL,
-				PRIMARY KEY (`id`),
-				UNIQUE KEY `field_id` (`field_id`)
-			) TYPE=MyISAM");
+			return Symphony::Database()
+				->create('tbl_fields_addresslocation')
+				->ifNotExists()
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'field_id' => 'int(11)',
+					'street_label' => 'varchar(80)',
+					'city_label' => 'varchar(80)',
+					'region_label' => 'varchar(80)',
+					'postal_code_label' => 'varchar(80)',
+					'country_label' => 'varchar(80)',
+				])
+				->keys([
+					'id' => 'primary',
+					'field_id' => 'unique',
+				])
+				->execute()
+				->success();
 		}
 
 		/*
 			Modified from:
 			http://www.kevinbradwick.co.uk/developer/php/free-to-script-to-calculate-the-radius-of-a-coordinate-using-latitude-and-longitude
 		*/
-		public function geoRadius($lat, $lng, $rad, $kilometers=false)
+		public function geoRadius($lat, $lng, $rad, $kilometers = false)
 		{
 			$radius = ($kilometers) ? ($rad * 0.621371192) : $rad;
 
@@ -106,7 +130,7 @@
 			(float)$latMAX = $lat + $usrRLAT;
 
 			// Longitude calculation
-			(float)$mpdLON = 69.1703234283616 * cos($lat * (pi/180));
+			(float)$mpdLON = 69.1703234283616 * cos($lat * (pi()/180));
 			(float)$dpmLON = 1 / $mpdLON; // degrees per mile longintude
 			$usrRLON = $dpmLON * $radius;
 

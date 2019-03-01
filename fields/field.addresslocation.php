@@ -1,32 +1,35 @@
 <?php
 
 	require_once(CORE . '/class.cacheable.php');
+	require_once EXTENSIONS . '/addresslocationfield/lib/class.entryqueryaddresslocationadapter.php';
 
 	Class fieldAddressLocation extends Field{
 
-		private $_driver;
+		public $driver;
 		private $_geocode_cache_expire = 60; // minutes
 
 		// defaults used when user doesn't enter defaults when adding field to section
 		private $_default_location = 'London, England';
 		private $_default_coordinates = '51.58129468879224, -0.554702996875005'; // London, England
 
-		private $_filter_origin = array();
+		public $filter_origin = array();
 
 		public function __construct()
 		{
 			parent::__construct();
+			$this->entryQueryFieldAdapter = new EntryQueryAddressLocationAdapter($this);
+
 			$this->_name = 'Address Location';
-			$this->_driver = Symphony::ExtensionManager()->create('addresslocationfield');
+			$this->driver = Symphony::ExtensionManager()->create('addresslocationfield');
 		}
 
-		private function __geocodeAddress($address)
+		public function geocodeAddress($address)
 		{
 			$coordinates = null;
 
 			$cache_id = md5('addresslocationfield_' . $address);
 			$cache = new Cacheable(Symphony::Database());
-			$cachedData = $cache->check($cache_id);
+			$cachedData = $cache->read($cache_id);
 
 			// no data has been cached
 			if(!$cachedData) {
@@ -77,7 +80,7 @@
 			return true;
 		}
 
-		function displaySettingsPanel(XMLElement &$wrapper, $errors = NULL)
+		function displaySettingsPanel(XMLElement &$wrapper, $errors = null)
 		{
 			parent::displaySettingsPanel($wrapper, $errors);
 
@@ -90,7 +93,7 @@
 
 		}
 
-		public function processRawFieldData($data, &$status, &$message=null, $simulate=false, $entry_id=null)
+		public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null)
 		{
 			$status = self::__OK__;
 
@@ -103,7 +106,7 @@
 				'postal_code' => General::sanitize($data['postal_code']),
 				'country' => General::sanitize($data['country']),
 			);
-			$geocoded_result = $this->__geocodeAddress(implode(',', $result));
+			$geocoded_result = $this->geocodeAddress(implode(',', $result));
 
 			$neighborhood = '';
 			if( is_object($geocoded_result) ) {
@@ -146,20 +149,28 @@
 
 			if($id === false) return false;
 
-			$fields = array(
-				'field_id' => $id,
-				'street_label' => $this->get('street_label'),
-				'city_label' => $this->get('city_label'),
-				'region_label' => $this->get('region_label'),
-				'postal_code_label' => $this->get('postal_code_label'),
-				'country_label' => $this->get('country_label')
-			);
+			Symphony::Database()
+				->delete('tbl_fields_' . $this->handle())
+				->where(['field_id' => $id])
+				->limit(1)
+				->execute()
+				->success();
 
-			Symphony::Database()->query("DELETE FROM `tbl_fields_".$this->handle()."` WHERE `field_id` = '$id' LIMIT 1");
-			Symphony::Database()->insert($fields, 'tbl_fields_' . $this->handle());
+			Symphony::database()
+				->insert('tbl_fields_' . $this->handle())
+				->values([
+					'field_id' => $id,
+					'street_label' => $this->get('street_label'),
+					'city_label' => $this->get('city_label'),
+					'region_label' => $this->get('region_label'),
+					'postal_code_label' => $this->get('postal_code_label'),
+					'country_label' => $this->get('country_label'),
+				])
+				->execute()
+				->success();
 		}
 
-		function displayPublishPanel(XMLElement &$wrapper, $data = NULL, $flagWithError = NULL, $fieldnamePrefix = NULL, $fieldnamePostfix = NULL, $entry_id = NULL)
+		function displayPublishPanel(XMLElement &$wrapper, $data = null, $flagWithError = null, $fieldnamePrefix = null, $fieldnamePostfix = null, $entry_id = null)
 		{
 			$key = Symphony::Configuration()->get('api_key','addresslocationfield');
 			if(empty($key)) {
@@ -178,11 +189,12 @@
 			$label = new XMLElement('p', $this->get('label'));
 			$label->setAttribute('class', 'title');
 			$wrapper->appendChild($label);
+			$wrapinner = new XMLElement('div', null, array('class' => 'main-wrapper'));
 
 			// Address Fields
 			$address = new XMLElement('div');
 			$address->setAttribute('class', 'address '.$class);
-			$wrapper->appendChild($address);
+			$wrapinner->appendChild($address);
 
 			$label = Widget::Label($this->get('street_label'));
 			$label->setAttribute('class', 'street');
@@ -219,56 +231,78 @@
 			$label->appendChild(Widget::Input('fields'.$fieldnamePrefix.'['.$this->get('element_name').'][longitude]'.$fieldnamePostfix, $coordinates[1], 'text', array('readonly' => 'readonly')));
 			$address->appendChild($label);
 
-			$label = Widget::Label();
-			$label->setAttribute('class', 'locate');
-			$label->appendChild(Widget::Input('locate', 'Geocode Address', 'button', array('class' => 'button')));
-			$label->appendChild(Widget::Input('clear', 'Clear Address', 'button', array('class' => 'button')));
-			$address->appendChild($label);
+			$div = new XMLElement('div');
+			$div->setAttribute('class', 'locate');
+			$div->appendChild(Widget::Input('locate', 'Geocode Address', 'button', array('class' => 'button')));
+			$div->appendChild(Widget::Input('clear', 'Clear Address', 'button', array('class' => 'button')));
+			$address->appendChild($div);
 
 			$map = new XMLElement('div');
 			$map->setAttribute('class', 'map '.$class.' open');
-			$wrapper->appendChild($map);
+			$wrapinner->appendChild($map);
+
+			$wrapper->appendChild($wrapinner);
 		}
 
 		public function createTable()
 		{
-			return Symphony::Database()->query(
-				"CREATE TABLE IF NOT EXISTS `tbl_entries_data_" . $this->get('id') . "` (
-				  `id` int(11) unsigned NOT NULL auto_increment,
-				  `entry_id` int(11) unsigned NOT NULL,
-				  `street` varchar(255),
-				  `street_handle` varchar(255),
-				  `city` varchar(255),
-				  `city_handle` varchar(255),
-				  `region` varchar(255),
-				  `region_handle` varchar(255),
-				  `postal_code` varchar(255),
-				  `postal_code_handle` varchar(255),
-				  `country` varchar(255),
-				  `country_handle` varchar(255),
-				  `latitude` double default NULL,
-				  `longitude` double default NULL,
-				  `neighborhood` varchar(255),
-				  `neighborhood_handle` varchar(255),
-				  `result_data` blob NOT NULL,
-				  PRIMARY KEY  (`id`),
-				  KEY `entry_id` (`entry_id`),
-				  KEY `latitude` (`latitude`),
-				  KEY `longitude` (`longitude`),
-				  INDEX `street` (`street`),
-				  INDEX `street_handle` (`street_handle`),
-				  INDEX `city` (`city`),
-				  INDEX `city_handle` (`city_handle`),
-				  INDEX `region` (`region`),
-				  INDEX `region_handle` (`region_handle`),
-				  INDEX `postal_code` (`postal_code`),
-				  INDEX `postal_code_handle` (`postal_code_handle`),
-				  INDEX `country` (`country`),
-				  INDEX `country_handle` (`country_handle`),
-				  INDEX `neighborhood` (`neighborhood`),
-				  INDEX `neighborhood_handle` (`neighborhood_handle`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"
-			);
+			return Symphony::Database()
+				->create('tbl_entries_data_' . $this->get('id'))
+				->ifNotExists()
+				->fields([
+					'id' => [
+						'type' => 'int(11)',
+						'auto' => true,
+					],
+					'entry_id' => 'int(11)',
+					'street' => 'varchar(255)',
+					'street_handle' => 'varchar(255)',
+					'city' => 'varchar(255)',
+					'city_handle' => 'varchar(255)',
+					'region' => 'varchar(255)',
+					'region_handle' => 'varchar(255)',
+					'postal_code' => 'varchar(255)',
+					'postal_code_handle' => 'varchar(255)',
+					'country' => 'varchar(255)',
+					'country_handle' => 'varchar(255)',
+					'latitude' => [
+						'type' => 'double',
+						'null' => true,
+					],
+					'longitude' => [
+						'type' => 'double',
+						'null' => true,
+					],
+					'neighborhood' => [
+						'type' => 'varchar(255)',
+						'null' => true,
+					],
+					'neighborhood_handle' => [
+						'type' => 'varchar(255)',
+						'null' => true,
+					],
+					'result_data' => 'blob',
+				])
+				->keys([
+					'id' => 'primary',
+					'entry_id' => 'key',
+					'latitude' => 'key',
+					'longitude' => 'key',
+					'street' => 'index',
+					'street_handle' => 'index',
+					'city' => 'index',
+					'city_handle' => 'index',
+					'region' => 'index',
+					'region_handle' => 'index',
+					'postal_code' => 'index',
+					'postal_code_handle' => 'index',
+					'country' => 'index',
+					'country_handle' => 'index',
+					'neighborhood' => 'index',
+					'neighborhood_handle' => 'index',
+				])
+				->execute()
+				->success();
 		}
 
 		public function convertObjectToArray($data)
@@ -321,7 +355,7 @@
 			}
 		}
 
-		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = NULL, $entry_id = NULL)
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null)
 		{
 			$field = new XMLElement($this->get('element_name'), null, array(
 				'latitude' => $data['latitude'],
@@ -331,7 +365,7 @@
 
 			foreach (array('street', 'city', 'region', 'postal_code', 'country', 'neighborhood') as $name)
 			{
-				if ($encode === TRUE){
+				if ($encode === true){
 					$data[$name] = General::sanitize($data[$name]);
 				}
 				$element_name = $this->get("{$name}_label");
@@ -352,17 +386,17 @@
 
 			// Add back Google Maps result data
 
-			if (count($this->_filter_origin['latitude']) > 0) {
+			if (!empty($this->filter_origin['latitude'])) {
 				$distance = new XMLElement('distance');
-				$distance->setAttribute('from', $this->_filter_origin['latitude'] . ',' . $this->_filter_origin['longitude']);
-				$distance->setAttribute('distance', $this->_driver->geoDistance($this->_filter_origin['latitude'], $this->_filter_origin['longitude'], $data['latitude'], $data['longitude'], $this->_filter_origin['unit']));
-				$distance->setAttribute('unit', ($this->_filter_origin['unit'] == 'k') ? 'km' : 'miles');
+				$distance->setAttribute('from', $this->filter_origin['latitude'] . ',' . $this->filter_origin['longitude']);
+				$distance->setAttribute('distance', $this->driver->geoDistance($this->filter_origin['latitude'], $this->filter_origin['longitude'], $data['latitude'], $data['longitude'], $this->filter_origin['unit']));
+				$distance->setAttribute('unit', ($this->filter_origin['unit'] == 'k') ? 'km' : 'miles');
 				$field->appendChild($distance);
 			}
 
 		}
 
-		public function prepareTableValue($data, XMLElement $link = NULL, $entry_id = NULL)
+		public function prepareTableValue($data, XMLElement $link = null, $entry_id = null)
 		{
 			if (empty($data)) return;
 
@@ -377,7 +411,23 @@
 			return trim($string,", ");
 		}
 
-		function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false)
+		public function fetchFilterableOperators()
+		{
+			return array(
+				array(
+					'title'				=> 'in',
+					'filter'			=> 'in ',
+					'help'				=> __('in street|city|region|postal_code|country of %s')
+				),
+				array(
+					'title'				=> 'within',
+					'filter'			=> 'within ',
+					'help'				=> __('Within %skm|mile|miles of %s')
+				),
+			);
+		}
+
+		function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false)
 		{
 
 			$columns_to_labels = array();
@@ -431,7 +481,7 @@
 				}
 				// otherwise the origin needs geocoding
 				else {
-					$geocoded_result = $this->__geocodeAddress($origin);
+					$geocoded_result = $this->geocodeAddress($origin);
 					$coordinates = $geocoded_result->geometry->location;
 
 					if ($geocoded_result) {
@@ -443,12 +493,12 @@
 				// if we don't have a decent set of coordinates, we can't query
 				if (is_null($lat) || is_null($lng)) return true;
 
-				$this->_filter_origin['latitude'] = $lat;
-				$this->_filter_origin['longitude'] = $lng;
-				$this->_filter_origin['unit'] = $unit[0];
+				$this->filter_origin['latitude'] = $lat;
+				$this->filter_origin['longitude'] = $lng;
+				$this->filter_origin['unit'] = $unit[0];
 
 				// build the bounds within the query should look
-				$radius = $this->_driver->geoRadius($lat, $lng, $radius, ($unit[0] == 'k'));
+				$radius = $this->driver->geoRadius($lat, $lng, $radius, ($unit[0] == 'k'));
 
 				$where .= sprintf(
 					" AND `t%d`.`latitude` BETWEEN %s AND %s AND `t%d`.`longitude` BETWEEN %s AND %s",

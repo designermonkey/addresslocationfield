@@ -39,13 +39,13 @@
 			map.setCenter(latlng);
 			//map.setZoom(16);
 			SetMarker(latlng);
-			helpers.toggleFieldState(field.find('label.locate input[name="locate"]'), true);
+			helpers.toggleFieldState(field.find('div.locate input[name="locate"]'), true);
 		}
 		else{
-			helpers.toggleFieldState(field.find('label.locate input[name="clear"]'), true);
+			helpers.toggleFieldState(field.find('div.locate input[name="clear"]'), true);
 		}
 
-		field.find('label.locate input[name="clear"]').click(function(ev){
+		field.find('div.locate input[name="clear"]').click(function(ev){
 
 			ev.preventDefault();
 
@@ -57,16 +57,15 @@
 			map.setCenter(new google.maps.LatLng(0,0));
 			map.setZoom(1);
 
-			field.find('label.locate input[name="locate"]').removeAttr('disabled');
+			field.find('div.locate input[name="locate"]').removeAttr('disabled');
 
 		});
 
 		if(field.find('div.address').hasClass('sidebar')){
 
-			var a = $('<a class="mapswitch" href="#">[-] Hide Map</a>').appendTo('label.locate')
+			var a = $('<a class="mapswitch" href="#">[-] Hide Map</a>').appendTo('div.locate')
 
-			field.delegate('label.locate a.mapswitch', 'click', function(ev){
-				console.log('clicked');
+			field.delegate('div.locate a.mapswitch', 'click', function(ev){
 				ev.preventDefault();
 				var map = field.find('div.map');
 				if(map.hasClass('open')){
@@ -81,7 +80,7 @@
 		}
 
 
-		field.find('label.locate input[name="locate"]').click(function(ev){
+		field.find('div.locate input[name="locate"]').click(function(ev){
 
 			//Reassign field to stop mime warning/error
 			var field = $('div.field-addresslocation');
@@ -116,7 +115,7 @@
 		});
 
 		field.on('focus', 'input[type=text]', function(ev){
-			var $btn = field.find('label.locate input[name="locate"]')
+			var $btn = field.find('div.locate input[name="locate"]')
 			if ($btn.attr('disabled')) {
 				helpers.toggleFieldState($btn);
 			}
@@ -125,7 +124,6 @@
 	}
 	function GeocodeAddress(address, success, fail){
 		geocoder.geocode({"address":address}, function(results, status){
-			console.log(status, results);
 			if(status == google.maps.GeocoderStatus.OK){
 				success(results[0]);
 			}else{
