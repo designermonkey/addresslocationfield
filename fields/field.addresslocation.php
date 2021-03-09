@@ -32,10 +32,11 @@
 			if(!$cachedData) {
 
 				include_once(TOOLKIT . '/class.gateway.php');
-
+				
+				$key = Symphony::Configuration()->get('api_key','addresslocationfield');
 				$ch = new Gateway;
 				$ch->init();
-				$ch->setopt('URL', 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($address));
+				$ch->setopt('URL', 'https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($address) . "&key=$key");
 				$response = json_decode($ch->exec());
 
 				if (isset($response->error_message)) {
